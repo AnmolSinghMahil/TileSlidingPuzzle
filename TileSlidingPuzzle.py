@@ -1,16 +1,16 @@
 
 from ctypes import sizeof
 import queue
+import time
+import random
+start = time.time()
 
-# StateDimension=3
 StateDimension=4
-# InitialState = '123456708'
-#InitialState = '218764053'
-GoalState = '123456780'
-
-# GoalState = "123456789ABCDEF0"
+# StateDimension=3
+# GoalState = '123456780'
+GoalState = "123456789ABCDEF0"
 Actions = lambda s: ['u', 'd', 'l', 'r']
-
+Opposite=dict([('u','d'),('d','u'),('l','r'),('r','l'), (None, None)])
 
 class Node:
   def __init__(self,InitialState,action,parent=None):
@@ -41,8 +41,10 @@ def Result(state, action):
   return ''.join(newState)
 
 
+initialStates = ['213807456','735102648','843251670']
 def BreadthFirstSearch(GoalState):
-  InitialState = '16235A749C08DEBF'
+  InitialState = '237416B8590CDAEF'
+
   print(InitialState)
   node = Node(InitialState,'',None)
   global expandedNodes
@@ -55,6 +57,7 @@ def BreadthFirstSearch(GoalState):
   reached = {node.state}
   while not frontier.empty():
     expandedNodes += 1
+    # print(expandedNodes)
     newNode = frontier.get()
     for child in Expand(newNode):
         if GoalState == child.state:
@@ -82,3 +85,32 @@ while successNode.parent is not None:
 
 print(moveString)
 print(expandedNodes)
+def LegalMove(state, action):
+  i = state.index('0')
+  row,col=i//StateDimension, i % StateDimension
+  if ( (action=='u' and row==0) or
+       (action=='d' and row==StateDimension-1) or
+       (action=='l' and col==0) or
+       (action=='r' and col==StateDimension-1)):
+      return False
+  return True
+def RandomWalk(state, steps):
+  actionSequence = []
+  actionLast = None
+  for i in range(steps):
+    action = None
+    while action==None:
+      action = random.choice(Actions(state))
+      action = action if (LegalMove(state, action) 
+          and action!= Opposite[actionLast]) else None
+    actionLast = action
+    state = Result(state, action)
+    actionSequence.append(action)
+  return state, actionSequence
+
+
+result4x4, solution = RandomWalk(GoalState,35)
+print(result4x4,solution)
+
+end = time.time()
+print(f"Runtime of the program is {end - start}")
